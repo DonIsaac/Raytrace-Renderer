@@ -77,8 +77,8 @@ public class Model implements IModel {
 				double z = Double.valueOf(line.split(" ")[3]);
 				Vector3 vertex = new Vector3(x, y, z);
 				m.verticies.add(vertex);
-				if (vertex.length() > radius)
-					radius = vertex.length();
+				if (vertex.len() > radius)
+					radius = vertex.len();
 			} else if (line.startsWith("vn ")) {
 				double x = Double.valueOf(line.split(" ")[1]);
 				double y = Double.valueOf(line.split(" ")[2]);

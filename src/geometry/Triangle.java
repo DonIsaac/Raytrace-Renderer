@@ -1,7 +1,11 @@
 package geometry;
 
 import tools.Epsilon;
-
+/**
+ * Represents a triangle in 3D space. <b>NOT COMPLETE!</b>
+ * @author Donny
+ *
+ */
 public class Triangle implements Primitive{
 	Vector3 p, q, t, n;
 	

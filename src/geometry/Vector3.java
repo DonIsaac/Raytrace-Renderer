@@ -19,16 +19,16 @@ public class Vector3 {
 		this.z = z;
 	}
 
-	public double length() {
+	public double len() {
 
 		return Math.sqrt(x * x + y * y + z * z);
 	}
 
 	/**
-	 * Turns the vector into a unit vector
+	 * Normalizes the vector.
 	 */
-	public void normalize() {
-		double len = length();
+	public void nor() {
+		double len = len();
 		try {
 			this.x /= len;
 			this.y /= len;
@@ -41,7 +41,7 @@ public class Vector3 {
 	}
 	
 	public Vector3 getNormalized(){
-		double len = length();
+		double len = len();
 		return new Vector3(this.x/len,this.y/len,this.z/len);
 	}
 

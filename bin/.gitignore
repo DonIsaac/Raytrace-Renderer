@@ -1,7 +1,3 @@
-/engine/
 /geometry/
-/lighting/
-/model/
 /render/
-/scene/
-/tools/
+/model/

@@ -1,34 +1,55 @@
 package geometry;
 
-import java.awt.Color;
-
-import lighting.Material;
 import tools.Epsilon;
 
+/**
+ * Represents a geometric plane in 3D space.
+ * 
+ * @author Donny
+ *
+ */
 public class Plane implements Primitive {
+	/** A point on the plane that is used for position*/
+	protected Vector3 p;
+	/** The normal vector that is used for orientation.*/
+	protected Vector3 n;
 
-	protected Vector3 p, n;
-
+	/**
+	 * Constructs a plane using a point in space and a normal vector.
+	 * @param point A point on the plane
+	 * @param normal The plane's normal vector
+	 */
 	public Plane(Vector3 point, Vector3 normal) {
 		p = point;
 		n = normal;
-		n.normalize();
+		n.nor();
 
 	}
-
+	/**
+	 * Constructs a plane using three points in space.
+	 * @param p The first point
+	 * @param q The second point
+	 * @param r The third point
+	 */
 	public Plane(Vector3 p, Vector3 q, Vector3 r) {
 		Vector3 pq = q.getSubtract(p);
 		Vector3 pr = r.getSubtract(p);
 		p = p.clone();
 		n = pq.cross(pr);
-		n.normalize();
+		n.nor();
 
 	}
-
+	/**
+	 * 
+	 * @return The point on the plane. Used for location.
+	 */
 	public Vector3 getPoint() {
 		return p;
 	}
-
+	/**
+	 * Sets the point on the plane. Used for location.
+	 * @param point The new point
+	 */
 	public void setPoint(Vector3 point) {
 		this.p = point;
 	}
@@ -40,10 +61,13 @@ public class Plane implements Primitive {
 	public Vector3 getNormal() {
 		return n;
 	}
-
+	/**
+	 * Sets the normal vector.
+	 * @param n The new normal vector
+	 */
 	public void setNormal(Vector3 n) {
 		this.n = n;
-		n.normalize();
+		n.nor();
 	}
 
 	public boolean contains(Vector3 v) {

@@ -1,5 +1,9 @@
 package geometry;
-
+/**
+ * Interface used by all primitive shapes.
+ * @author Donny
+ *
+ */
 public interface Primitive extends Transformable{
 	/**
 	 * Checks to see if a point represented by a {@link Vector3} is inside the {@link Primitive}
