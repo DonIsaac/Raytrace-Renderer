@@ -1,5 +1,7 @@
 package geometry;
 
+import java.util.ArrayList;
+
 /**
  * Stores information about a {@link Ray}-Geometry intersection. This class is
  * effectively a struct.
@@ -8,8 +10,10 @@ package geometry;
  *
  */
 public class Intersection {
-	/** Points in world space where there was an intersection. */
-	public Vector3[] intersections;
+	/** The point in world space where there was an intersection. */
+	public Vector3 hit;
+	/** The {@link Vector3} normal to the intersected surface. **/
+	public Vector3 normal;
 	/**
 	 * True if there was an intersection, false otherwise.<br/><br/><i>(NOTE: I know that I
 	 * could use a method that checks the status of the intersections array
@@ -22,27 +26,18 @@ public class Intersection {
 	 * @param isHit was there an intersection?
 	 * @param intersections list of intersections in world space
 	 */
-	public Intersection(boolean isHit, Vector3... intersections) {
+	public Intersection(boolean isHit, Vector3 intersection, Vector3 normal) {
 		this.isHit = isHit;
-		this.intersections = intersections;
+		this.hit = intersection;
+		this.normal=normal;
 	}
 	/**
-	 * Gets the closest intersection point relative to a point.
-	 * @param p the point to check
-	 * @return the closest intersection to <b>p</b>
+	 * Quick Constructor for when there is no intersection.
 	 */
-	public Vector3 getClosestIntersection(Vector3 p) {
-		if (intersections.length == 0)
-			return new Vector3(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
-		if (intersections.length == 1) {
-			return intersections[0];
-		}
-		Vector3 closest = intersections[0];
-		for (Vector3 v : intersections) {
-			if (p.distFrom(v) < p.distFrom(closest))
-				closest = v.clone();
-		}
-		return closest;
-
+	public Intersection(){
+		this.isHit=false;
+		this.hit=Vector3.ZERO;
+		this.normal=Vector3.ZERO;
 	}
+	
 }

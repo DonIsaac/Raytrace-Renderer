@@ -54,23 +54,23 @@ public class Triangle implements Primitive{
 		Vector3 p = r.getDir().cross(e2);
 		double d=e1.dot(p);
 		if(!Epsilon.nearlyEquals(d, 0.0))
-			return new Intersection(false);
+			return new Intersection();
 		
 		Vector3 t = r.getOrigin().getSubtract(p);
 		double u = t.dot(p)/d;
 		if(u<0.0 || u > 1.0)
-			return new Intersection(false);
+			return new Intersection();
 		
 		Vector3 q = t.cross(e1);
 		double v = r.getDir().dot(q)/d;
 		if(v<0.0 || u+v>1.0)
-			return new Intersection(false);
+			return new Intersection();
 		
 		double w = e2.dot(q)/d;
 		if(w > Epsilon.E)
-			return new Intersection(true,r.pointOnRay(w));
+			return new Intersection(true,r.pointOnRay(w),n);
 		
-		return new Intersection(false);
+		return new Intersection();
 	}
 
 	public Vector3 getNormal(Vector3 p) {

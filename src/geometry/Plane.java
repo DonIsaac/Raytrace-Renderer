@@ -76,12 +76,12 @@ public class Plane implements Primitive {
 
 	public Intersection intersects(Ray r) {
 		if (Epsilon.nearlyEquals(n.dot(r.getDir()), 0.0))
-			return new Intersection(false);
+			return new Intersection();
 		double t = n.dot(p.getSubtract(r.getOrigin())) / n.dot(r.getDir());
 		if (t > 0)
-			return new Intersection(true, r.pointOnRay(t));
+			return new Intersection(true, r.pointOnRay(t),n);
 		else
-			return new Intersection(false);
+			return new Intersection();
 	}
 
 	@Override

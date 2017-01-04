@@ -41,23 +41,21 @@ public class Sphere implements Primitive {
 		double b = l.dot(p);
 		final double discrim = b * b - l.getSquared() * (p.getSquared() - r * r);
 		if (discrim < 0) {
-			return new Intersection(false);
-		} else if (Epsilon.nearlyEquals(discrim, 0.0)) {
+			return new Intersection();
+		} /*else if (Epsilon.nearlyEquals(discrim, 0.0)) {
 			double t = -b + Math.sqrt(discrim);
 			Vector3 hit = c.getAdd(ray.pointOnRay(t).getSubtract(c).getNormalized().getScale(r));
 			// return new Intersection(true, ray.pointOnRay(t));
-			return new Intersection(true, hit);
-		} else {
+			return new Intersection(true, hit,getNormal(hit));
+		}*/ else {
 			double t1 = -b + Math.sqrt(discrim);
 			double t2 = -b - Math.sqrt(discrim);
-			if (Epsilon.nearlyEquals(t2, 0.0)) {
-				Vector3 hit = c.getAdd(ray.pointOnRay(t1).getSubtract(c).getNormalized().getScale(r));
-				return new Intersection(true, hit);
-			}
-			// System.out.println("two hits, "+t1+" "+t2);
-			Vector3 hit1 = c.getAdd(ray.pointOnRay(t1).getSubtract(c).getNormalized().getScale(r));
-			Vector3 hit2 = c.getAdd(ray.pointOnRay(t2).getSubtract(c).getNormalized().getScale(r));
-			return new Intersection(true, hit1, hit2);
+			if(t1<0||t2<0)
+				return new Intersection();
+			//Vector3 hit = c.getAdd(ray.pointOnRay(t1>=t2?t1:t2).getSubtract(c).getNormalized().getScale(r));
+			Vector3 hit = ray.pointOnRay(t1<=t2?t1:t2);
+			return new Intersection(true,hit,getNormal(hit));
+			
 		}
 
 	}

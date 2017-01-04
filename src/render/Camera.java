@@ -51,7 +51,7 @@ public class Camera implements Transformable {
 		BufferedImage pic = new BufferedImage(data.getWidth(), data.getHeight(), data.getType());
 		for (int y = 0; y < data.getHeight(); y++) {
 			for (int x = 0; x < data.getWidth(); x++) {
-				pic.setRGB(x, y, getColorAtPixel(x, y, s, data).getRGB());
+				pic.setRGB(x, y, raytrace(x, y, s, data).getRGB());
 				// This line of code here prints out the rendering progress, but
 				// slows down the rendering process drastically (System calls
 				// are expensive).
@@ -75,7 +75,7 @@ public class Camera implements Transformable {
 	 *            Information about the image
 	 * @return
 	 */
-	public Color getColorAtPixel(int x, int y, Scene s, ImageData data) {
+	public Color raytrace(int x, int y, Scene s, ImageData data) {
 		// Arrays are used for anti-aliasing
 		int len = data.antiAliasing ? 4 : 1;
 		// System.out.println("Raycasting for pixel ("+x+","+y+")");
@@ -107,9 +107,12 @@ public class Camera implements Transformable {
 	 * Constructs a perspective {@link Ray} using the x and y coordinates of an
 	 * image. A page on why/how this works will be added to the wiki.
 	 * 
-	 * @param x The x coordinate the {@link Ray} will pass through
-	 * @param y The y coordinate the {@link Ray} will pass through
-	 * @param i Data on the image
+	 * @param x
+	 *            The x coordinate the {@link Ray} will pass through
+	 * @param y
+	 *            The y coordinate the {@link Ray} will pass through
+	 * @param i
+	 *            Data on the image
 	 * @return The {@link Ray} that is constructed
 	 */
 	private Ray[] getPerspectiveRay(int x, int y, ImageData i) {
@@ -150,20 +153,22 @@ public class Camera implements Transformable {
 		boolean isHit = false;
 
 		for (IModel p : s.objects) {
-			Intersection i = p.intersects(r);
-			if (i.isHit) {
-				double intersectionDist = r.getOrigin().distFrom(i.getClosestIntersection(r.getOrigin()));
+			Intersection intersection = p.intersects(r);
+
+			if (intersection.isHit) {
+				double intersectionDist = pos.distFrom(intersection.hit);
 				if (intersectionDist < dist) {
 					primitive = p.clone();
-					hitPoint = i.getClosestIntersection(r.getOrigin()).clone();
+					hitPoint = intersection.hit;
+					normal = intersection.normal;
 					dist = intersectionDist;
 					isHit = true;
 				}
 			}
 
 		}
-		System.out.println(hitPoint);
-		return new RaycastHit(primitive, hitPoint, dist, isHit);
+		//System.out.println(hitPoint);
+		return new RaycastHit(primitive, hitPoint, normal, dist, isHit);
 	}
 
 	private Vector3 phongShading(Scene s, Ray ray, RaycastHit hit) {
@@ -171,7 +176,7 @@ public class Camera implements Transformable {
 		IModel h = hit.itemHit;
 		Color itemColor = h.getMaterial().getColor();
 		Material m = h.getMaterial();
-		Vector3 n = h.getNormal(hit.hitPoint).clone();
+		Vector3 n = hit.normal.clone();
 		c.x = (double) itemColor.getRed() * s.ambient.getInitialIntensity();
 		c.y = (double) itemColor.getGreen() * s.ambient.getInitialIntensity();
 		c.z = (double) itemColor.getBlue() * s.ambient.getInitialIntensity();

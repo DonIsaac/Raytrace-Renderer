@@ -16,7 +16,7 @@ import geometry.Vector3;
 import lighting.AmbientLight;
 import lighting.DefaultMaterial;
 import lighting.PointLight;
-import model.Model;
+import model.ModelLoader;
 import model.PlaneModel;
 import model.SphereModel;
 import render.Camera;
@@ -50,8 +50,9 @@ public class NonVisualEngine {
 		loadMaterials();
 		s.ambient = new AmbientLight(Color.white, .1);
 		//loadSnowman();
-		// loadSphereModels();
-		loadModel();
+		loadSphereModels();
+		//loadSphereModels2();
+		//loadModel();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
 
 		x = y = 0;
@@ -118,7 +119,7 @@ public class NonVisualEngine {
 		cam.translate(Vector3.K.getScale(-7));
 		s.lights.add(new PointLight(new Vector3(-3, 4, 0), Color.white, 1.0));
 		try {
-			s.objects.add(Model.loadModel(new File("Iso.obj"),blue));
+			s.objects.add(ModelLoader.loadObjModel(new File("Iso.obj"),blue));
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -152,7 +153,7 @@ public class NonVisualEngine {
 			Random r = new Random();
 			String i = "Image" + r.nextInt(9999999) + ".png";
 			ImageIO.write(img, "png",
-					new File("C:\\Users\\Donny\\Documents\\.Programming Projects\\RaycasingEngine\\Pictures\\" + i));
+					new File("C:\\Users\\Donny\\Documents\\.Programming Projects\\Raytrace Rendering Files\\Pictures\\" + i){{createNewFile();}});
 			System.out.println("File Saved!");
 		} catch (IOException e1) {
 

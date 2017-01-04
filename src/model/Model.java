@@ -1,10 +1,5 @@
 package model;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
 
 import geometry.Intersection;
@@ -12,17 +7,19 @@ import geometry.Primitive;
 import geometry.Ray;
 import geometry.Sphere;
 import geometry.Transform;
-import geometry.Triangle;
 import geometry.Vector3;
 import lighting.Material;
+import tools.Epsilon;
+
 /**
  * Re
+ * 
  * @author Donny
  *
  */
 public class Model implements IModel {
 
-	private Model() {
+	protected Model() {
 
 	}
 
@@ -39,69 +36,71 @@ public class Model implements IModel {
 	}
 
 	public Intersection intersects(Ray r) {
+		Vector3 hit = Vector3.ZERO, normal = Vector3.ZERO;
+		double dist = -1.0;
+		boolean isHit = false;
+		
+		//test intersection with bounding sphere to improve efficency
 		if (!boundingSphere.intersects(r).isHit)
-			return new Intersection(false);
+			return new Intersection();
+		
 		else {
-			Intersection intersect = new Intersection(false);
+			//Moller-Trumbore ray-triangle intersection algorithm
 			for (Face f : faces) {
-				Triangle temp = new Triangle(verticies.get((int) f.vertex.x-1), verticies.get((int) f.vertex.y-1),
-						verticies.get((int) f.vertex.z-1));
-				Intersection newInt = temp.intersects(r);
-				if (r.getOrigin().distFrom(intersect.getClosestIntersection(r.getOrigin())) > r.getOrigin()
-						.distFrom(newInt.getClosestIntersection(r.getOrigin()))) {
-					intersect = newInt;
-				}
-			}
-			return intersect;
-		}
-	}
+				Vector3 v1 = verticies.get((int) (f.vertex.x - 1));
+				Vector3 v2 = verticies.get((int) (f.vertex.x - 2));
+				Vector3 v3 = verticies.get((int) (f.vertex.x - 3));
 
-	public Vector3 getNormal(Vector3 p) {
-		System.err.println("Cannot use this method in Model.");
-		return null;
+				Vector3 e1 = v2.getSubtract(v1);
+				Vector3 e2 = v3.getSubtract(v1);
+
+				Vector3 p = r.getDir().cross(e2);
+				double det = e1.dot(p);
+
+				if (Epsilon.nearlyEquals(det, 0.0))
+					break;
+
+				double invDet = 1.0 / det;
+
+				Vector3 t = r.getOrigin().getSubtract(v1);
+
+				double u = t.dot(p) * invDet;
+				if (u < 0.0 || u > 1.0)
+					break;
+
+				Vector3 q = t.cross(e1);
+				double v = r.getDir().dot(q) * invDet;
+				if (v < 0.0 || v > 1.0)
+					break;
+
+				double T = e2.dot(q) * invDet;
+				if (T > dist) {
+					dist = T;
+					hit = r.pointOnRay(dist);
+					normal = getNormal(v1, v2, v3);
+				}
+
+			}
+
+			return new Intersection(isHit, hit, normal);
+
+		}
+
 	}
 
 	public void setMaterial(Material material) {
 		this.mat = material;
 	}
-
-	public static Model loadModel(File file, Material material) throws FileNotFoundException, IOException {
-		BufferedReader reader = new BufferedReader(new FileReader(file));
-		Model m = new Model();
-		double radius = 0.0;
-		String line;
-		while ((line = reader.readLine()) != null) {
-			if (line.startsWith("v ")) {
-				double x = Double.valueOf(line.split(" ")[1]);
-				double y = Double.valueOf(line.split(" ")[2]);
-				double z = Double.valueOf(line.split(" ")[3]);
-				Vector3 vertex = new Vector3(x, y, z);
-				m.verticies.add(vertex);
-				if (vertex.len() > radius)
-					radius = vertex.len();
-			} else if (line.startsWith("vn ")) {
-				double x = Double.valueOf(line.split(" ")[1]);
-				double y = Double.valueOf(line.split(" ")[2]);
-				double z = Double.valueOf(line.split(" ")[3]);
-				m.normals.add(new Vector3(x, y, z).getNormalized());
-			} else if (line.startsWith("f ")) {
-				double vertexIndex1 = Double.valueOf(line.split(" ")[1].split("/")[0]);
-				double vertexIndex2 = Double.valueOf(line.split(" ")[2].split("/")[0]);
-				double vertexIndex3 = Double.valueOf(line.split(" ")[3].split("/")[0]);
-				Vector3 vertexIndicies = new Vector3(vertexIndex1, vertexIndex2, vertexIndex3);
-
-				double normalIndex1 = Double.valueOf(line.split(" ")[1].split("/")[2]);
-				double normalIndex2 = Double.valueOf(line.split(" ")[2].split("/")[2]);
-				double normalIndex3 = Double.valueOf(line.split(" ")[3].split("/")[2]);
-				Vector3 normalIndicies = new Vector3(normalIndex1, normalIndex2, normalIndex3);
-				m.faces.add(new Face(vertexIndicies, normalIndicies));
-			}
-		}
-		reader.close();
-		m.mat = material;
-		m.boundingSphere = new Sphere(Vector3.ZERO, radius);
-		m.matrix = Transform.getIdentityInstance();
-		return m;
+	/**
+	 * Gets the normal {@link Vector3} of a face (or really any triangle).
+	 * @param p First vertex of the triangle
+	 * @param q Second vertex of the triangle
+	 * @param r Third vertex of the triangle
+	 * @return the {@link Vector3} normal to the triangle
+	 */
+	private Vector3 getNormal(Vector3 p, Vector3 q, Vector3 r) {
+		//Phong interpolation
+		throw new UnsupportedOperationException();
 	}
 
 	public void translate(Vector3 v) {

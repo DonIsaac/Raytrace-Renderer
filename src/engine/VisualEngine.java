@@ -69,7 +69,7 @@ public class VisualEngine extends JPanel implements Runnable, KeyListener,
 
 	private void update() {
 		if (y < height) {
-			Color c = cam.getColorAtPixel(x, y, s, data);
+			Color c = cam.raytrace(x, y, s, data);
 			screen.setRGB(x, y, c.getRGB());
 			System.out.println(100.0*(double)(y*width+x)/(double)(width*height)+"%");
 			x++;

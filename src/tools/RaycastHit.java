@@ -11,12 +11,14 @@ public class RaycastHit {
 	/***/
 	public IModel itemHit;
 	public Vector3 hitPoint;
+	public Vector3 normal;
 	public double dist;
 	public boolean isHit;
 	
-	public RaycastHit(IModel itemHit, Vector3 hitPoint, double dist, boolean isHit){
+	public RaycastHit(IModel itemHit, Vector3 hitPoint, Vector3 normal, double dist, boolean isHit){
 		this.itemHit=itemHit;
 		this.hitPoint=hitPoint;
+		this.normal=normal;
 		this.dist=dist;
 		this.isHit=isHit;
 	}
