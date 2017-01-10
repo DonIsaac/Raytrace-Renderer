@@ -43,11 +43,12 @@ public class ModelLoader {
 				double normalIndex3 = Double.valueOf(line.split(" ")[3].split("/")[2]);
 				Vector3 normalIndicies = new Vector3(normalIndex1, normalIndex2, normalIndex3);
 				m.faces.add(new Face(vertexIndicies, normalIndicies));
+				
 			}
 		}
 		reader.close();
 		m.mat = material;
-		m.boundingSphere = new Sphere(Vector3.ZERO, radius);
+		m.boundingSphere = new Sphere(Vector3.ZERO.clone(), radius);
 		m.matrix = Transform.getIdentityInstance();
 		return m;
 	}

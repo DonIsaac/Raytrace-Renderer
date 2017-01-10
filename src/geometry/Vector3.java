@@ -60,12 +60,13 @@ public class Vector3 {
 	}
 
 	public double dot(Vector3 v) {
-		return ((x * v.x + y * v.y + z * v.z));
+		return (x * v.x + y * v.y + z * v.z);
 	}
 
 	public Vector3 cross(Vector3 v) {
-		double tmpx = y * v.z - z * v.y, tmpy = z * v.x - x * v.z, tmpz = x
-				* v.y - y * v.x;
+		double tmpx = y * v.z - z * v.y, 
+				tmpy = z * v.x - x * v.z, 
+				tmpz = x * v.y - y * v.x;
 		return new Vector3(tmpx, tmpy, tmpz);
 	}
 
@@ -81,35 +82,40 @@ public class Vector3 {
 		z = v.z;
 	}
 
-	public void scale(double scalar) {
+	public Vector3 scl(double scalar) {
 		x *= scalar;
 		y *= scalar;
 		z *= scalar;
+		
+		return this;
 	}
 
 	public Vector3 getScale(double scalar) {
 		return new Vector3(x * scalar, y * scalar, z * scalar);
 	}
 
-	public void add(Vector3 v) {
+	public Vector3 add(Vector3 v) {
 		x += v.x;
 		y += v.y;
 		z += v.z;
+		return this;
 	}
-	public void add(double x, double y, double z){
+	public Vector3 add(double x, double y, double z){
 		this.x=x;
 		this.y=y;
 		this.z=z;
+		return this;
 	}
 
 	public Vector3 getAdd(Vector3 v) {
 		return new Vector3(x + v.x, y + v.y, z + v.z);
 	}
 
-	public void subtract(Vector3 v) {
+	public Vector3 sub(Vector3 v) {
 		x -= v.x;
 		y -= v.y;
 		z -= v.z;
+		return this;
 	}
 
 	public Vector3 getSubtract(Vector3 v) {

@@ -16,9 +16,11 @@ import geometry.Vector3;
 import lighting.AmbientLight;
 import lighting.DefaultMaterial;
 import lighting.PointLight;
+import model.Model;
 import model.ModelLoader;
 import model.PlaneModel;
 import model.SphereModel;
+import model.TriangleModel;
 import render.Camera;
 import render.ImageData;
 import scene.Scene;
@@ -49,9 +51,9 @@ public class NonVisualEngine {
 		s = new Scene();
 		loadMaterials();
 		s.ambient = new AmbientLight(Color.white, .1);
-		//loadSnowman();
-		loadSphereModels();
-		//loadSphereModels2();
+		// loadSnowman();
+		 loadSphereModels();
+		// loadSphereModels2();
 		//loadModel();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
 
@@ -116,10 +118,13 @@ public class NonVisualEngine {
 	}
 
 	private void loadModel() {
-		cam.translate(Vector3.K.getScale(-7));
-		s.lights.add(new PointLight(new Vector3(-3, 4, 0), Color.white, 1.0));
+		s.lights.add(new PointLight(new Vector3(-3, 4, -2), Color.white, 1.0));
+		cam.translate(new Vector3(1.5, 1.0, -5.0));
+		// s.objects.add(new SphereModel(new Vector3(0, .5, 3.5), 1.0, green));
 		try {
-			s.objects.add(ModelLoader.loadObjModel(new File("Iso.obj"),blue));
+			Model m = ModelLoader.loadObjModel(new File("cube3.obj"), blue);
+			s.objects.add(m);
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		} catch (IOException e) {
@@ -152,8 +157,12 @@ public class NonVisualEngine {
 			g.drawString("Created by Donny Isaac", 5, height - g.getFontMetrics().getHeight());
 			Random r = new Random();
 			String i = "Image" + r.nextInt(9999999) + ".png";
-			ImageIO.write(img, "png",
-					new File("C:\\Users\\Donny\\Documents\\.Programming Projects\\Raytrace Rendering Files\\Pictures\\" + i){{createNewFile();}});
+			ImageIO.write(img, "png", new File(
+					"C:\\Users\\Donny\\Documents\\.Programming Projects\\Raytrace Rendering Files\\Pictures\\" + i) {
+				{
+					createNewFile();
+				}
+			});
 			System.out.println("File Saved!");
 		} catch (IOException e1) {
 

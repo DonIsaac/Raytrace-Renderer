@@ -90,7 +90,7 @@ public class Camera implements Transformable {
 				c.add(phongShading(s, primarys[i], hits[i]));
 			}
 		}
-		c.scale(1.0 / (double) len);// Average the colors
+		c.scl(1.0 / (double) len);// Average the colors
 		return new Color(round(c.x), round(c.y), round(c.z));
 
 	}
@@ -157,7 +157,7 @@ public class Camera implements Transformable {
 
 			if (intersection.isHit) {
 				double intersectionDist = pos.distFrom(intersection.hit);
-				if (intersectionDist < dist) {
+				if (intersectionDist < dist && intersectionDist > 0.0) {
 					primitive = p.clone();
 					hitPoint = intersection.hit;
 					normal = intersection.normal;

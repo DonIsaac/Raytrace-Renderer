@@ -36,71 +36,84 @@ public class Model implements IModel {
 	}
 
 	public Intersection intersects(Ray r) {
-		Vector3 hit = Vector3.ZERO, normal = Vector3.ZERO;
-		double dist = -1.0;
+
+		// test intersection with bounding sphere to improve efficency
+		Intersection i = boundingSphere.intersects(r);
+		//if (!i.isHit) 
+		//	return new Intersection();
+		
+
+		Vector3 hit = Vector3.ZERO.clone(), normal = Vector3.ZERO.clone();
+		double dist = Double.MAX_VALUE;
 		boolean isHit = false;
-		
-		//test intersection with bounding sphere to improve efficency
-		if (!boundingSphere.intersects(r).isHit)
-			return new Intersection();
-		
-		else {
-			//Moller-Trumbore ray-triangle intersection algorithm
-			for (Face f : faces) {
-				Vector3 v1 = verticies.get((int) (f.vertex.x - 1));
-				Vector3 v2 = verticies.get((int) (f.vertex.x - 2));
-				Vector3 v3 = verticies.get((int) (f.vertex.x - 3));
+		// Moller-Trumbore ray-triangle intersection algorithm
+		// TODO make this shit work lmao
+		for (Face f: faces) {
+			Vector3 v1 = matrix.getTransformed(verticies.get((int) (f.vertex.x - 1)));
+			Vector3 v2 = matrix.getTransformed(verticies.get((int) (f.vertex.y - 1)));
+			Vector3 v3 = matrix.getTransformed(verticies.get((int) (f.vertex.z - 1)));
 
-				Vector3 e1 = v2.getSubtract(v1);
-				Vector3 e2 = v3.getSubtract(v1);
+			Vector3 e1 = v2.clone().sub(v1);
+			Vector3 e2 = v3.clone().sub(v1);
 
-				Vector3 p = r.getDir().cross(e2);
-				double det = e1.dot(p);
+			Vector3 p = r.getDir().cross(e2);
+			double det = e1.dot(p);
+			if (Epsilon.nearlyEquals(det, 0.0))
+				continue;
+			double invDet = 1.0 / det;
 
-				if (Epsilon.nearlyEquals(det, 0.0))
-					break;
+			Vector3 t = r.getOrigin().clone().sub(v1);
 
-				double invDet = 1.0 / det;
-
-				Vector3 t = r.getOrigin().getSubtract(v1);
-
-				double u = t.dot(p) * invDet;
-				if (u < 0.0 || u > 1.0)
-					break;
-
-				Vector3 q = t.cross(e1);
-				double v = r.getDir().dot(q) * invDet;
-				if (v < 0.0 || v > 1.0)
-					break;
-
-				double T = e2.dot(q) * invDet;
-				if (T > dist) {
-					dist = T;
-					hit = r.pointOnRay(dist);
-					normal = getNormal(v1, v2, v3);
-				}
-
+			double u = t.dot(p) * invDet;
+			if (u < 0.0 || u > 1.0)
+				continue;
+			Vector3 q = t.cross(e1);
+			double v = r.getDir().dot(q) * invDet;
+			if (v < 0.0 || v > 1.0)
+				continue;
+			double T = e2.dot(q) * invDet;
+			if (T < dist && T>0.0) {
+				dist = T;
+				hit = r.pointOnRay(dist);
+				normal = getNormal(f);
+				isHit = true;
 			}
 
-			return new Intersection(isHit, hit, normal);
-
 		}
+
+		return new Intersection(isHit, hit, normal);
 
 	}
 
 	public void setMaterial(Material material) {
 		this.mat = material;
 	}
+
 	/**
 	 * Gets the normal {@link Vector3} of a face (or really any triangle).
-	 * @param p First vertex of the triangle
-	 * @param q Second vertex of the triangle
-	 * @param r Third vertex of the triangle
+	 * 
+	 * @param v1
+	 *            First vertex of the triangle
+	 * @param v2
+	 *            Second vertex of the triangle
+	 * @param r
+	 *            Third vertex of the triangle
 	 * @return the {@link Vector3} normal to the triangle
 	 */
-	private Vector3 getNormal(Vector3 p, Vector3 q, Vector3 r) {
-		//Phong interpolation
-		throw new UnsupportedOperationException();
+	private Vector3 getNormal(Face f) {
+		// TODO implement Phong interpolation
+		// return normals.get((int) (f.vertex.x - 1));// temp approximation
+		/*
+		 * Vector3 v1 = matrix.getTransformed(verticies.get((int) (f.vertex.x -
+		 * 1))); Vector3 v2 = matrix.getTransformed(verticies.get((int)
+		 * (f.vertex.y - 1))); Vector3 v3 =
+		 * matrix.getTransformed(verticies.get((int) (f.vertex.z - 1)));
+		 * 
+		 * Vector3 e1 = v2.clone().sub(v1); Vector3 e2 = v3.clone().sub(v1);
+		 * 
+		 * return e1.cross(e2);
+		 */
+		return this.normals.get((int) (f.normal.x - 1));
 	}
 
 	public void translate(Vector3 v) {

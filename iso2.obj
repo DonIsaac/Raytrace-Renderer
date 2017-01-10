@@ -1,6 +1,6 @@
 # Blender v2.76 (sub 0) OBJ File: ''
 # www.blender.org
-mtllib untitled.mtl
+mtllib iso2.mtl
 o Icosphere
 v 0.000000 -1.004833 0.000000
 v -0.727105 -0.449381 -0.528266
