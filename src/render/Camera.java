@@ -3,6 +3,8 @@ package render;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
 
+import debug.Assert;
+import engine.Main;
 import geometry.Intersection;
 import geometry.Ray;
 import geometry.Transform;
@@ -30,6 +32,7 @@ public class Camera implements Transformable {
 	Transform camToWorld;
 	double focalLength;
 	boolean isOrthographic;
+	public static Ray brokenRay = new Ray(new Vector3(1.5,1.5,-5.7), new Vector3(-0.11369553074091115,-0.2945747841923606,0.9488408838196037));
 
 	public Camera(Vector3 pos, Transform cameraToWorld, double focalLength, boolean isOrthographic) {
 		this.pos = pos;
@@ -56,6 +59,11 @@ public class Camera implements Transformable {
 				// slows down the rendering process drastically (System calls
 				// are expensive).
 				// System.out.println(100.0*(double)(y*width+x)/(double)(width*height)+"%");
+				
+				double percent = 100.0*(double)(y*data.getWidth()+x)/(double)(data.getWidth()*data.getHeight());
+				if(percent % 10 == 0){
+					System.out.println(percent+"%");
+				}
 			}
 		}
 		return pic;
@@ -79,15 +87,20 @@ public class Camera implements Transformable {
 		// Arrays are used for anti-aliasing
 		int len = data.antiAliasing ? 4 : 1;
 		// System.out.println("Raycasting for pixel ("+x+","+y+")");
-		Ray[] primarys = isOrthographic ? getOrthographicRay(x, y) : getPerspectiveRay(x, y, data);
+		Ray[] primaries = isOrthographic ? getOrthographicRay(x, y) : getPerspectiveRay(x, y, data);
 		RaycastHit[] hits = new RaycastHit[len];
+
 		for (int i = 0; i < len; i++) {
-			hits[i] = raycast(primarys[i], s);
+			hits[i] = raycast(primaries[i], s);
+		}
+		if (x == 850 && y == 825 && Main.DEBUG) {
+			System.out.println(primaries[0]);
+			Assert.assertEquals(hits[0].isHit, false);
 		}
 		Vector3 c = new Vector3(0.0, 0.0, 0.0);
 		for (int i = 0; i < len; i++) {
 			if (hits[i].isHit) {
-				c.add(phongShading(s, primarys[i], hits[i]));
+				c.add(phongShading(s, primaries[i], hits[i]));
 			}
 		}
 		c.scl(1.0 / (double) len);// Average the colors
@@ -167,7 +180,7 @@ public class Camera implements Transformable {
 			}
 
 		}
-		//System.out.println(hitPoint);
+		// System.out.println(hitPoint);
 		return new RaycastHit(primitive, hitPoint, normal, dist, isHit);
 	}
 

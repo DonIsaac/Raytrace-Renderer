@@ -74,6 +74,9 @@ public class Ray {
 		this.dir = dir;
 		this.dir.nor();
 	}
+	public boolean equals(Ray ray){
+		return this.origin.equals(ray.origin)&&this.dir.equals(ray.dir);
+	}
 	@Override
 	public String toString(){
 		return "<"+origin.x+","+origin.y+","+origin.z+">+ t<"+dir.x+","+dir.y+","+dir.z+">";

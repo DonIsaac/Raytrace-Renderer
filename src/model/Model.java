@@ -36,43 +36,40 @@ public class Model implements IModel {
 	}
 
 	public Intersection intersects(Ray r) {
-
+		/*
+		 * There was a problem with the intersection algorithm that caused it to
+		 * load the expected triangle, plus another one attached to it. I
+		 * noticed that when you rotated the points used in the algorithm (v1
+		 * becomes v2, v2 becomes v3, v3 becomes v1), it did the same thing,
+		 * except that the attached triangle was attached in a different place.
+		 * Because of this, instead of finding a proper fix, I decided to run
+		 * the intersection algorithm twice, once with v1, v2, v3 and once with
+		 * v2, v3, v1. This way, if it only hits once, I know that there was an
+		 * intersection with the extranious triangle and not an actual hit.
+		 * WOOOO lazy solutions!
+		 */
 		// test intersection with bounding sphere to improve efficency
 		Intersection i = boundingSphere.intersects(r);
-		//if (!i.isHit) 
-		//	return new Intersection();
-		
+		if (!i.isHit)
+			return new Intersection();
 
 		Vector3 hit = Vector3.ZERO.clone(), normal = Vector3.ZERO.clone();
 		double dist = Double.MAX_VALUE;
 		boolean isHit = false;
-		// Moller-Trumbore ray-triangle intersection algorithm
-		// TODO make this shit work lmao
-		for (Face f: faces) {
+
+		for (Face f : faces) {
 			Vector3 v1 = matrix.getTransformed(verticies.get((int) (f.vertex.x - 1)));
 			Vector3 v2 = matrix.getTransformed(verticies.get((int) (f.vertex.y - 1)));
 			Vector3 v3 = matrix.getTransformed(verticies.get((int) (f.vertex.z - 1)));
-
-			Vector3 e1 = v2.clone().sub(v1);
-			Vector3 e2 = v3.clone().sub(v1);
-
-			Vector3 p = r.getDir().cross(e2);
-			double det = e1.dot(p);
-			if (Epsilon.nearlyEquals(det, 0.0))
+			double intersect = intersect(v1, v2, v3, r);
+			if (intersect < 0.0)
 				continue;
-			double invDet = 1.0 / det;
 
-			Vector3 t = r.getOrigin().clone().sub(v1);
-
-			double u = t.dot(p) * invDet;
-			if (u < 0.0 || u > 1.0)
+			double intersectCheck = intersect(v2, v3, v1, r);
+			if (intersectCheck < 0.0)
 				continue;
-			Vector3 q = t.cross(e1);
-			double v = r.getDir().dot(q) * invDet;
-			if (v < 0.0 || v > 1.0)
-				continue;
-			double T = e2.dot(q) * invDet;
-			if (T < dist && T>0.0) {
+			double T = intersect;
+			if (T < dist && T > 0.0) {
 				dist = T;
 				hit = r.pointOnRay(dist);
 				normal = getNormal(f);
@@ -83,6 +80,32 @@ public class Model implements IModel {
 
 		return new Intersection(isHit, hit, normal);
 
+	}
+
+	private double intersect(Vector3 v1, Vector3 v2, Vector3 v3, Ray r) {
+		// Moller-Trumbore ray-triangle intersection algorithm
+
+		Vector3 e1 = v2.clone().sub(v1);
+		Vector3 e2 = v3.clone().sub(v1);
+
+		Vector3 p = r.getDir().cross(e2);
+		double det = e1.dot(p);
+		if (Epsilon.nearlyEquals(det, 0.0))
+			return -1.0;
+		double invDet = 1.0 / det;
+
+		Vector3 t = r.getOrigin().clone().sub(v1);
+
+		double u = t.dot(p) * invDet;
+		if (u < 0.0 || u > 1.0)
+			return -1.0;
+		Vector3 q = t.cross(e1);
+		double v = r.getDir().dot(q) * invDet;
+		if (v < 0.0 || v > 1.0)
+			return -1.0;
+		double T = e2.dot(q) * invDet;
+
+		return T;
 	}
 
 	public void setMaterial(Material material) {

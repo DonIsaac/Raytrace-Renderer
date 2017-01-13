@@ -26,7 +26,7 @@ import render.ImageData;
 import scene.Scene;
 
 /**
- * Non-Visual driver class for the ray tracing program
+ * Non-Visual driver class for the ray tracing program.
  * 
  * @author Donny
  * @version 2.2.3.1
@@ -52,9 +52,9 @@ public class NonVisualEngine {
 		loadMaterials();
 		s.ambient = new AmbientLight(Color.white, .1);
 		// loadSnowman();
-		 loadSphereModels();
+		//loadSphereModels();
 		// loadSphereModels2();
-		//loadModel();
+		loadModel();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
 
 		x = y = 0;
@@ -119,10 +119,10 @@ public class NonVisualEngine {
 
 	private void loadModel() {
 		s.lights.add(new PointLight(new Vector3(-3, 4, -2), Color.white, 1.0));
-		cam.translate(new Vector3(1.5, 1.0, -5.0));
+		cam.translate(new Vector3(-1.0, 0, -3.0));
 		// s.objects.add(new SphereModel(new Vector3(0, .5, 3.5), 1.0, green));
 		try {
-			Model m = ModelLoader.loadObjModel(new File("cube3.obj"), blue);
+			Model m = ModelLoader.loadObjModel(new File("monkey1.obj"), blue);
 			s.objects.add(m);
 
 		} catch (FileNotFoundException e) {
@@ -132,7 +132,7 @@ public class NonVisualEngine {
 		}
 	}
 
-	public NonVisualEngine(String title) {
+	public NonVisualEngine() {
 		if (_16_9) {
 			width = scale * 16;
 			height = scale * 9;
@@ -145,9 +145,6 @@ public class NonVisualEngine {
 
 	}
 
-	public static void main(String[] args) {
-		new NonVisualEngine("Raytracing Engine");
-	}
 
 	private void screenshot() {
 		try {

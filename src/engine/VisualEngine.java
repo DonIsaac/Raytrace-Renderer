@@ -158,10 +158,6 @@ public class VisualEngine extends JPanel implements Runnable, KeyListener,
 		f.setVisible(true);
 	}
 
-	public static void main(String[] args) {
-		new VisualEngine("Raytracing Engine");
-	}
-
 	private void screenshot(){
 		try {
 			g.setFont(new Font("Arial",Font.PLAIN, (int)(width/4*.1)));
