@@ -52,8 +52,7 @@ public class VisualEngine extends JPanel implements Runnable, KeyListener,
 	DefaultMaterial red,blue,pink,green,orange,white,yellow,cyan,grey;
 
 	private void initialize() {	
-		cam = new Camera(new Vector3(0,.5,-.7), Transform.getIdentityInstance(), 1.7,
-				false);
+		cam = new Camera(new Vector3(0,.5,-.7), Transform.getIdentityInstance(), 1.7);
 		s = new Scene();
 		loadMaterials();
 		s.ambient = new AmbientLight(Color.white,.1);

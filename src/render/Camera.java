@@ -31,14 +31,13 @@ public class Camera implements Transformable {
 	Vector3 pos;
 	Transform camToWorld;
 	double focalLength;
-	boolean isOrthographic;
-	public static Ray brokenRay = new Ray(new Vector3(1.5,1.5,-5.7), new Vector3(-0.11369553074091115,-0.2945747841923606,0.9488408838196037));
+	public static Ray brokenRay = new Ray(new Vector3(1.5, 1.5, -5.7),
+			new Vector3(-0.11369553074091115, -0.2945747841923606, 0.9488408838196037));
 
-	public Camera(Vector3 pos, Transform cameraToWorld, double focalLength, boolean isOrthographic) {
+	public Camera(Vector3 pos, Transform cameraToWorld, double focalLength) {
 		this.pos = pos;
 		this.camToWorld = cameraToWorld;
 		this.focalLength = focalLength;
-		this.isOrthographic = isOrthographic;
 	}
 
 	/**
@@ -58,11 +57,14 @@ public class Camera implements Transformable {
 				// This line of code here prints out the rendering progress, but
 				// slows down the rendering process drastically (System calls
 				// are expensive).
-				// System.out.println(100.0*(double)(y*width+x)/(double)(width*height)+"%");
-				
-				double percent = 100.0*(double)(y*data.getWidth()+x)/(double)(data.getWidth()*data.getHeight());
-				if(percent % 10 == 0){
-					System.out.println(percent+"%");
+				// System.out.println(100.0*(double)(y*data.getWidth()+x)/(double)(data.getWidth()*data.getHeight())+"%");
+				if (Main.DEBUG) {
+					double percent = 100.0 * (double) (y * data.getWidth() + x)
+							/ (double) (data.getWidth() * data.getHeight());
+					if (percent % 10 == 0 || percent % 10 == 5) {
+						System.out.println(percent + "%");
+					}
+	
 				}
 			}
 		}
@@ -87,7 +89,7 @@ public class Camera implements Transformable {
 		// Arrays are used for anti-aliasing
 		int len = data.antiAliasing ? 4 : 1;
 		// System.out.println("Raycasting for pixel ("+x+","+y+")");
-		Ray[] primaries = isOrthographic ? getOrthographicRay(x, y) : getPerspectiveRay(x, y, data);
+		Ray[] primaries = getPerspectiveRay(x, y, data);
 		RaycastHit[] hits = new RaycastHit[len];
 
 		for (int i = 0; i < len; i++) {
@@ -106,14 +108,6 @@ public class Camera implements Transformable {
 		c.scl(1.0 / (double) len);// Average the colors
 		return new Color(round(c.x), round(c.y), round(c.z));
 
-	}
-
-	/**
-	 * Not really an easy thing to do with ray tracing. Will either implement
-	 * this or add it later.
-	 */
-	private Ray[] getOrthographicRay(int x, int y) {
-		throw new UnsupportedOperationException();
 	}
 
 	/**
@@ -141,6 +135,7 @@ public class Camera implements Transformable {
 			Ray[] rays = { new Ray(this.pos.clone(), dir) };
 			return rays;
 		} else {
+			// 4 rays per pixel instead of 1
 			double[] xa = { nx - .75, nx + .75 };
 			double[] ya = { ny - .75, ny + .75 };
 			Ray[] rays = new Ray[4];

@@ -29,7 +29,7 @@ public class Model implements IModel {
 	protected ArrayList<Face> faces = new ArrayList<Face>();
 
 	protected Transform matrix;
-	protected Sphere boundingSphere;
+	public Sphere boundingSphere;
 
 	public Material getMaterial() {
 		return mat;
@@ -176,6 +176,11 @@ public class Model implements IModel {
 	public boolean equals(Primitive prim) {
 		System.err.println("The 'equals' method is not defined for the class Model.");
 		return false;
+	}
+	
+	@Override
+	public String toString(){
+		return "verticies: "+verticies.size()+" normals: "+normals.size()+" faces: "+faces.size()+" radius: "+boundingSphere.getRadius();
 	}
 
 }

@@ -127,9 +127,9 @@ public class Transform implements Transformable {
 	 *            The translation along the Z-axis
 	 */
 	public void translate(double x, double y, double z) {
-		matrix[3][0] += x;
-		matrix[3][1] += y;
-		matrix[3][2] += z;
+		matrix[0][3] += x;
+		matrix[1][3] += y;
+		matrix[2][3] += z;
 	}
 
 	/**
