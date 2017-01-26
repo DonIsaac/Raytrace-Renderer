@@ -27,7 +27,7 @@ public class Vector3 {
 	/**
 	 * Normalizes the vector.
 	 */
-	public void nor() {
+	public Vector3 nor() {
 		double len = len();
 		try {
 			this.x /= len;
@@ -38,6 +38,7 @@ public class Vector3 {
 			System.err.println(e.getMessage());
 			e.printStackTrace();
 		}
+		return this;
 	}
 	
 	public Vector3 getNormalized(){

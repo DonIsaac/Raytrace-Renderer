@@ -3,6 +3,8 @@ package engine;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -10,17 +12,17 @@ import java.io.IOException;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
+import javax.swing.JFrame;
 
 import geometry.Transform;
 import geometry.Vector3;
 import lighting.AmbientLight;
 import lighting.DefaultMaterial;
 import lighting.PointLight;
-import model.Model;
+import model.ModelInstance;
 import model.ModelLoader;
 import model.PlaneModel;
 import model.SphereModel;
-import model.TriangleModel;
 import render.Camera;
 import render.ImageData;
 import scene.Scene;
@@ -29,7 +31,6 @@ import scene.Scene;
  * Non-Visual driver class for the ray tracing program.
  * 
  * @author Donny
- * @version 2.2.3.1
  *
  */
 public class NonVisualEngine {
@@ -38,7 +39,7 @@ public class NonVisualEngine {
 
 	long startTime;
 
-	int scale = 120;
+	int scale = 80;
 	Camera cam;
 	Scene s;
 	ImageData data;
@@ -55,7 +56,7 @@ public class NonVisualEngine {
 		// loadSnowman();
 		//loadSphereModels();
 		// loadSphereModels2();
-		loadModel();
+		loadBMW();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
 
 		x = y = 0;
@@ -74,6 +75,25 @@ public class NonVisualEngine {
 	}
 
 	private void loadModel() {
+		s.lights.add(new PointLight(new Vector3(-3, 5, -2), Color.white, 1.0));
+		//cam.translate(new Vector3(-1,.5,-3));
+		cam.translate(new Vector3(2.5,1.5,-2.5));
+		cam.rotateX(.2, true);
+		cam.rotateY(-Math.PI/4.0, true);
+		//cam.rotateX(.2, true);
+		 //s.objects.add(new SphereModel(new Vector3(0, 0,0), 2.3, green));
+		try {
+			ModelInstance m = ModelLoader.loadObjModel(new File("moneky_smooth.obj"), red);
+			System.out.println(m);
+			s.objects.add(m);
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	private void loadBMW() {
 		s.lights.add(new PointLight(new Vector3(3, 5, -2), Color.white, 1.0));
 		//cam.translate(new Vector3(-2.0, 1.5, -4.7));
 		cam.translate(new Vector3(2.5,1.5,-2.5));
@@ -83,7 +103,7 @@ public class NonVisualEngine {
 		//cam.rotateX(.2, true);
 		 //s.objects.add(new SphereModel(new Vector3(0, 0,0), 2.3, green));
 		try {
-			Model m = ModelLoader.loadObjModel(new File("BMWModel2.obj"), red);
+			ModelInstance m = ModelLoader.loadObjModel(new File("BMWModel2.obj"), red);
 			System.out.println(m);
 			s.objects.add(m);
 
@@ -150,11 +170,34 @@ public class NonVisualEngine {
 			height = 300;
 		}
 		initialize();
+		setupInput();
 		this.run();
-
+		System.exit(0);
 	}
 
+	private void setupInput(){
+		JFrame frame = new JFrame();
+		KeyListener l = new KeyListener(){
 
+			public void keyPressed(KeyEvent e) {
+				if(e.getKeyCode()==KeyEvent.VK_P)
+					System.out.println(cam.requestProgress()+"%");
+				
+			}
+
+			public void keyReleased(KeyEvent arg0) {	
+			}
+
+			public void keyTyped(KeyEvent arg0) {
+			}
+			
+		};
+		frame.addKeyListener(l);
+		frame.setSize(300, 300);
+		frame.setLocationRelativeTo(null);
+		frame.setDefaultCloseOperation(3);
+		frame.setVisible(true);
+	}
 	private void screenshot() {
 		try {
 			Graphics g = img.getGraphics();
@@ -169,7 +212,7 @@ public class NonVisualEngine {
 					createNewFile();
 				}
 			});
-			System.out.println("File Saved!");
+			System.out.println("File Saved as " +i+"!");
 		} catch (IOException e1) {
 
 			e1.printStackTrace();

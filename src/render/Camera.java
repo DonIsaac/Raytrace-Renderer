@@ -31,13 +31,14 @@ public class Camera implements Transformable {
 	Vector3 pos;
 	Transform camToWorld;
 	double focalLength;
-	public static Ray brokenRay = new Ray(new Vector3(1.5, 1.5, -5.7),
-			new Vector3(-0.11369553074091115, -0.2945747841923606, 0.9488408838196037));
+	private int x, y, width, height;
+	private boolean rendering;
 
 	public Camera(Vector3 pos, Transform cameraToWorld, double focalLength) {
 		this.pos = pos;
 		this.camToWorld = cameraToWorld;
 		this.focalLength = focalLength;
+		this.rendering = false;
 	}
 
 	/**
@@ -51,23 +52,26 @@ public class Camera implements Transformable {
 	 */
 	public BufferedImage takePicture(Scene s, ImageData data) {
 		BufferedImage pic = new BufferedImage(data.getWidth(), data.getHeight(), data.getType());
-		for (int y = 0; y < data.getHeight(); y++) {
-			for (int x = 0; x < data.getWidth(); x++) {
+		rendering = true;
+		width = data.getWidth();
+		height = data.getHeight();
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++) {
 				pic.setRGB(x, y, raytrace(x, y, s, data).getRGB());
 				// This line of code here prints out the rendering progress, but
 				// slows down the rendering process drastically (System calls
 				// are expensive).
 				// System.out.println(100.0*(double)(y*data.getWidth()+x)/(double)(data.getWidth()*data.getHeight())+"%");
 				if (Main.DEBUG) {
-					double percent = 100.0 * (double) (y * data.getWidth() + x)
-							/ (double) (data.getWidth() * data.getHeight());
+					double percent = 100.0 * (double) (y * width + x) / (double) (width * height);
 					if (percent % 10 == 0 || percent % 10 == 5) {
 						System.out.println(percent + "%");
 					}
-	
+
 				}
 			}
 		}
+		rendering = false;
 		return pic;
 	}
 
@@ -94,10 +98,6 @@ public class Camera implements Transformable {
 
 		for (int i = 0; i < len; i++) {
 			hits[i] = raycast(primaries[i], s);
-		}
-		if (x == 850 && y == 825 && Main.DEBUG) {
-			System.out.println(primaries[0]);
-			Assert.assertEquals(hits[0].isHit, false);
 		}
 		Vector3 c = new Vector3(0.0, 0.0, 0.0);
 		for (int i = 0; i < len; i++) {
@@ -241,6 +241,15 @@ public class Camera implements Transformable {
 	public void rotateZ(double theta, boolean aroundOrigin) {
 		this.camToWorld.rotateZ(theta, aroundOrigin);
 
+	}
+
+	public double requestProgress() {
+		if (rendering)
+			return 100.0 * (double) (y * width + x) / (double) (width * height);
+		else {
+			System.err.println("progress requested while Camera was not rendering.");
+			return -1.0;
+		}
 	}
 
 	private double clamp(double num, double min, double max) {

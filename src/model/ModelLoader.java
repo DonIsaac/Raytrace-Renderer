@@ -13,9 +13,9 @@ import lighting.Material;
 
 public class ModelLoader {
 
-	public static Model loadObjModel(File file, Material material) throws IOException, FileNotFoundException{
+	public static ModelInstance loadObjModel(File file, Material material) throws IOException, FileNotFoundException{
 		BufferedReader reader = new BufferedReader(new FileReader(file));
-		Model m = new Model();
+		ModelInstance m = new ModelInstance();
 		double radius = 0.0;
 		String line;
 		while ((line = reader.readLine()) != null) {
