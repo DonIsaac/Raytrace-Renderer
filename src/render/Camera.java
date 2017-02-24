@@ -59,9 +59,9 @@ public class Camera implements Transformable {
 		height = data.getHeight();
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				exe.submit(() -> {
+				//exe.submit(() -> {
 					pic.setRGB(x, y, raytrace(x, y, s, data).getRGB());
-				});
+				//});
 
 				// This line of code here prints out the rendering progress, but
 				// slows down the rendering process drastically (System calls
@@ -195,20 +195,13 @@ public class Camera implements Transformable {
 		c.z = (double) itemColor.getBlue() * s.ambient.getInitialIntensity();
 		Vector3 lookVec = ray.getOrigin().getSubtract(hit.hitPoint).getNormalized();
 		for (Light l : s.lights) {
-			// Vector3 lightVec =
-			// l.getPos().getSubtract(hit.hitPoint).getNormalized();
-			// Ray r = new Ray(hit.hitPoint.clone(), lightVec.clone());)
+
 			Ray r = Ray.createRayFromPoints(hit.hitPoint, l.getPos());
 			RaycastHit hitToLight = raycast(r, s);
 
-			if (hitToLight.isHit && hitToLight.dist > .00001) {
-				/*
-				 * if(hitToLight.dist<.006){
-				 * System.out.println(hitToLight.dist); c = new
-				 * Vector3(255,255,255); continue; }
-				 */
-				// continue;
-			}
+			//check if hitpoint is in a shadow
+			if (hitToLight.isHit && hitToLight.dist > .00001) 
+				 continue;
 			Vector3 refVec = n.getScale(2 * r.getDir().dot(n)).getSubtract(r.getDir());
 			// diffuse
 			double d = max(r.getDir().dot(n), 0);

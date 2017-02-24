@@ -55,8 +55,8 @@ public class NonVisualEngine {
 		s.ambient = new AmbientLight(Color.white, .1);
 		// loadSnowman();
 		//loadSphereModels();
-		// loadSphereModels2();
-		loadBMW();
+		 loadSphereModels2();
+		//loadBMW();
 		//loadModel();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
 
@@ -129,6 +129,7 @@ public class NonVisualEngine {
 	}
 
 	private void loadSphereModels() {
+		cam.translate(new Vector3(-.3f,.7f,0f));
 		s.lights.add(new PointLight(new Vector3(-3, 4, 0), Color.white, 1.0));
 		s.objects.add(new SphereModel(new Vector3(0, 0, 3.5), 1.0, green));
 		s.objects.add(new SphereModel(new Vector3(0, 1.0, 3.8), 1.5, pink));
