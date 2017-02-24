@@ -2,8 +2,9 @@ package render;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-import debug.Assert;
 import engine.Main;
 import geometry.Intersection;
 import geometry.Ray;
@@ -33,6 +34,7 @@ public class Camera implements Transformable {
 	double focalLength;
 	private int x, y, width, height;
 	private boolean rendering;
+	private ExecutorService exe = Executors.newCachedThreadPool();
 
 	public Camera(Vector3 pos, Transform cameraToWorld, double focalLength) {
 		this.pos = pos;
@@ -57,7 +59,10 @@ public class Camera implements Transformable {
 		height = data.getHeight();
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				pic.setRGB(x, y, raytrace(x, y, s, data).getRGB());
+				exe.submit(() -> {
+					pic.setRGB(x, y, raytrace(x, y, s, data).getRGB());
+				});
+
 				// This line of code here prints out the rendering progress, but
 				// slows down the rendering process drastically (System calls
 				// are expensive).

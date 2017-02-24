@@ -140,7 +140,7 @@ public class ModelInstance implements IModel {
 		Vector3 n3 = this.normals.get((int) (f.normal.z - 1)).clone();
 
 		double t = 1.0-u-v;
-		//Np = t*n1 + t*n2 + t*n3  
+		//Np = t*n1 + u*n2 + v*n3  
 		return n1.scl(t).add(n2.scl(u)).add(n3.scl(v)).nor();
 	}
 

@@ -39,7 +39,7 @@ public class NonVisualEngine {
 
 	long startTime;
 
-	int scale = 80;
+	int scale = 120;
 	Camera cam;
 	Scene s;
 	ImageData data;
@@ -57,6 +57,7 @@ public class NonVisualEngine {
 		//loadSphereModels();
 		// loadSphereModels2();
 		loadBMW();
+		//loadModel();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
 
 		x = y = 0;
@@ -78,7 +79,7 @@ public class NonVisualEngine {
 		s.lights.add(new PointLight(new Vector3(-3, 5, -2), Color.white, 1.0));
 		//cam.translate(new Vector3(-1,.5,-3));
 		cam.translate(new Vector3(2.5,1.5,-2.5));
-		cam.rotateX(.2, true);
+		cam.rotateX(.3, true);
 		cam.rotateY(-Math.PI/4.0, true);
 		//cam.rotateX(.2, true);
 		 //s.objects.add(new SphereModel(new Vector3(0, 0,0), 2.3, green));
