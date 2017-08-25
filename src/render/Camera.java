@@ -141,8 +141,8 @@ public class Camera implements Transformable {
 			return rays;
 		} else {
 			// 4 rays per pixel instead of 1
-			double[] xa = { nx - .75, nx + .75 };
-			double[] ya = { ny - .75, ny + .75 };
+			double[] xa = { nx - .25, nx + .25 };
+			double[] ya = { ny - .25, ny + .25 };
 			Ray[] rays = new Ray[4];
 			int n = 0;
 			for (double xb : xa) {
