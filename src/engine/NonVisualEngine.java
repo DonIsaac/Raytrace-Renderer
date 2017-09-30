@@ -53,9 +53,9 @@ public class NonVisualEngine {
 		s = new Scene();
 		loadMaterials();
 		s.ambient = new AmbientLight(Color.white, .1);
-		// loadSnowman();
-		//loadSphereModels();
-		 loadSphereModels2();
+		//loadSnowman();
+		loadSphereModels();
+		//loadSphereModels2();
 		//loadBMW();
 		//loadModel();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
@@ -205,11 +205,11 @@ public class NonVisualEngine {
 			Graphics g = img.getGraphics();
 			g.setFont(new Font("Arial", Font.PLAIN, (int) (width / 4 * .1)));
 			g.setColor(Color.white);
-			g.drawString("Created by Donny Isaac", 5, height - g.getFontMetrics().getHeight());
+			g.drawString("Created by Don Isaac", 5, height - g.getFontMetrics().getHeight());
 			Random r = new Random();
 			String i = "Image" + r.nextInt(9999999) + ".png";
 			ImageIO.write(img, "png", new File(
-					"C:\\Users\\Donny\\Documents\\.Programming Projects\\Raytrace Rendering Files\\Pictures\\" + i) {
+					"D:\\Personal\\Raytrace Files\\Pictures\\" + i) {
 				{
 					createNewFile();
 				}

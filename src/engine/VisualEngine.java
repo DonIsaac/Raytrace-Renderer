@@ -57,8 +57,8 @@ public class VisualEngine extends JPanel implements Runnable, KeyListener,
 		loadMaterials();
 		s.ambient = new AmbientLight(Color.white,.1);
 		s.lights.add(new PointLight(new Vector3(-3,4,0),Color.white,1.0));
-		//loadSnowman();
-		loadSphereModels();
+		loadSnowman();
+		//loadSphereModels();
 		data = new ImageData(getWidth(), getHeight(),			
 				BufferedImage.TYPE_INT_RGB, true);
 
