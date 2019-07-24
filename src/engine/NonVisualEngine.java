@@ -9,6 +9,9 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -44,20 +47,22 @@ public class NonVisualEngine {
 	Scene s;
 	ImageData data;
 	int x, y;
-	private boolean _16_9 = true;
+	private boolean _16_9 = false;
 	DefaultMaterial red, blue, pink, green, orange, white, yellow, cyan, grey, black;
 
 	private void initialize() {
-		//cam = new Camera(new Vector3(0, .5, -.7), Transform.getIdentityInstance(), 1.7);
+		// cam = new Camera(new Vector3(0, .5, -.7), Transform.getIdentityInstance(),
+		// 1.7);
 		cam = new Camera(new Vector3(0, 0, 0), Transform.getIdentityInstance(), 1.7);
 		s = new Scene();
 		loadMaterials();
 		s.ambient = new AmbientLight(Color.white, .1);
-		//loadSnowman();
+		// loadSnowman();
 		loadSphereModels();
-		//loadSphereModels2();
-		//loadBMW();
-		//loadModel();
+		// loadSphereModels2();
+		// loadBMW();
+		// loadModel();
+		// loadMonkey();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
 
 		x = y = 0;
@@ -75,14 +80,22 @@ public class NonVisualEngine {
 		screenshot();
 	}
 
+//	private void loadMonkey() {
+//		s.lights.add(new PointLight(new Vector3(-3, 5, -2), Color.white, 1.0));
+//		
+//		try {
+//			ModelInstance m = ModelLoader.loadObjModel(new File(), material)
+//		}
+//		
+//	}
 	private void loadModel() {
 		s.lights.add(new PointLight(new Vector3(-3, 5, -2), Color.white, 1.0));
-		//cam.translate(new Vector3(-1,.5,-3));
-		cam.translate(new Vector3(2.5,1.5,-2.5));
+		// cam.translate(new Vector3(-1,.5,-3));
+		cam.translate(new Vector3(2.5, 1.5, -2.5));
 		cam.rotateX(.3, true);
-		cam.rotateY(-Math.PI/4.0, true);
-		//cam.rotateX(.2, true);
-		 //s.objects.add(new SphereModel(new Vector3(0, 0,0), 2.3, green));
+		cam.rotateY(-Math.PI / 4.0, true);
+		// cam.rotateX(.2, true);
+		// s.objects.add(new SphereModel(new Vector3(0, 0,0), 2.3, green));
 		try {
 			ModelInstance m = ModelLoader.loadObjModel(new File("moneky_smooth.obj"), red);
 			System.out.println(m);
@@ -94,15 +107,16 @@ public class NonVisualEngine {
 			e.printStackTrace();
 		}
 	}
+
 	private void loadBMW() {
 		s.lights.add(new PointLight(new Vector3(3, 5, -2), Color.white, 1.0));
-		//cam.translate(new Vector3(-2.0, 1.5, -4.7));
-		cam.translate(new Vector3(2.5,1.5,-2.5));
+		// cam.translate(new Vector3(-2.0, 1.5, -4.7));
+		cam.translate(new Vector3(4.5, 1.5, -2.5));
 		cam.rotateX(.2, true);
-		cam.rotateY(-Math.PI/4.0, true);
-		//cam.rotateY(.3, true);
-		//cam.rotateX(.2, true);
-		 //s.objects.add(new SphereModel(new Vector3(0, 0,0), 2.3, green));
+		cam.rotateY(-Math.PI / 4.0, true);
+		// cam.rotateY(.3, true);
+		// cam.rotateX(.2, true);
+		// s.objects.add(new SphereModel(new Vector3(0, 0,0), 2.3, green));
 		try {
 			ModelInstance m = ModelLoader.loadObjModel(new File("BMWModel2.obj"), red);
 			System.out.println(m);
@@ -114,7 +128,7 @@ public class NonVisualEngine {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private void loadSnowman() {
 		s.lights.add(new PointLight(new Vector3(-3, 4, 0), Color.white, 1.0));
 		s.objects.add(new PlaneModel(new Vector3(0, -1.2, 0), new Vector3(0, 1, 0), green));
@@ -129,7 +143,7 @@ public class NonVisualEngine {
 	}
 
 	private void loadSphereModels() {
-		cam.translate(new Vector3(-.3f,.7f,0f));
+		cam.translate(new Vector3(-.3f, .7f, 0f));
 		s.lights.add(new PointLight(new Vector3(-3, 4, 0), Color.white, 1.0));
 		s.objects.add(new SphereModel(new Vector3(0, 0, 3.5), 1.0, green));
 		s.objects.add(new SphereModel(new Vector3(0, 1.0, 3.8), 1.5, pink));
@@ -161,8 +175,6 @@ public class NonVisualEngine {
 		black = new DefaultMaterial(Color.black, alpha, ks, kd);
 	}
 
-	
-
 	public NonVisualEngine() {
 		if (_16_9) {
 			width = scale * 16;
@@ -177,22 +189,22 @@ public class NonVisualEngine {
 		System.exit(0);
 	}
 
-	private void setupInput(){
+	private void setupInput() {
 		JFrame frame = new JFrame();
-		KeyListener l = new KeyListener(){
+		KeyListener l = new KeyListener() {
 
 			public void keyPressed(KeyEvent e) {
-				if(e.getKeyCode()==KeyEvent.VK_P)
-					System.out.println(cam.requestProgress()+"%");
-				
+				if (e.getKeyCode() == KeyEvent.VK_P)
+					System.out.println(cam.requestProgress() + "%");
+
 			}
 
-			public void keyReleased(KeyEvent arg0) {	
+			public void keyReleased(KeyEvent arg0) {
 			}
 
 			public void keyTyped(KeyEvent arg0) {
 			}
-			
+
 		};
 		frame.addKeyListener(l);
 		frame.setSize(300, 300);
@@ -200,21 +212,30 @@ public class NonVisualEngine {
 		frame.setDefaultCloseOperation(3);
 		frame.setVisible(true);
 	}
+
 	private void screenshot() {
 		try {
+			Date now = new Date();
+			DateFormat df = DateFormat.getDateInstance(DateFormat.LONG);
+			String dateString = df.format(now)
+					.replace(' ', '-').replace(':', '-')
+					+ "-" + now.getHours()+ "h-" + now.getMinutes() + "m";
+					
+			String signature = "Created by Don Isaac (" + df.format(now) + ")";
+
 			Graphics g = img.getGraphics();
 			g.setFont(new Font("Arial", Font.PLAIN, (int) (width / 4 * .1)));
 			g.setColor(Color.white);
-			g.drawString("Created by Don Isaac", 5, height - g.getFontMetrics().getHeight());
+			g.drawString(signature, 5, height - g.getFontMetrics().getHeight());
 			Random r = new Random();
-			String i = "Image" + r.nextInt(9999999) + ".png";
-			ImageIO.write(img, "png", new File(
-					"D:\\Personal\\Raytrace Files\\Pictures\\" + i) {
+
+			String i = "Image-" + dateString + ".png";
+			ImageIO.write(img, "png", new File("D:\\Personal\\Raytrace Files\\Pictures\\" + i) {
 				{
 					createNewFile();
 				}
 			});
-			System.out.println("File Saved as " +i+"!");
+			System.out.println("File Saved as " + i + "!");
 		} catch (IOException e1) {
 
 			e1.printStackTrace();

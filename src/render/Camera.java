@@ -2,8 +2,7 @@ package render;
 
 import java.awt.Color;
 import java.awt.image.BufferedImage;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import engine.Main;
 import geometry.Intersection;
@@ -14,8 +13,13 @@ import geometry.Vector3;
 import lighting.Light;
 import lighting.Material;
 import model.IModel;
+import render.strategies.RenderStrategy;
 import scene.Scene;
+import tools.AbstractEventEmitter;
 import tools.RaycastHit;
+import tools.ThreadPool;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * Represents the camera used to take picture of a {@link Scene}. A Camera is
@@ -24,23 +28,32 @@ import tools.RaycastHit;
  * Camera is also not static, but is instead passed when a the user wants to
  * take a picture of a {@link Scene}.
  * 
- * @author Donny
+ * @author Don Isaac
  *
  */
-public class Camera implements Transformable {
+public class Camera extends AbstractEventEmitter implements Transformable {
 
 	Vector3 pos;
+	/**
+	 * Camera to world transformation matrix. Used for turning the camera.
+	 */
 	Transform camToWorld;
 	double focalLength;
 	private int x, y, width, height;
+	/**
+	 * True if the camera is currently rendering an image, false otherwise.
+	 */
 	private boolean rendering;
-	private ExecutorService exe = Executors.newCachedThreadPool();
+	private ThreadPool pool;
+	private RenderStrategy render;
 
 	public Camera(Vector3 pos, Transform cameraToWorld, double focalLength) {
 		this.pos = pos;
 		this.camToWorld = cameraToWorld;
 		this.focalLength = focalLength;
 		this.rendering = false;
+		this.pool = new ThreadPool();
+		this.render = RenderStrategy.getStrategy();
 	}
 
 	/**
@@ -57,11 +70,29 @@ public class Camera implements Transformable {
 		rendering = true;
 		width = data.getWidth();
 		height = data.getHeight();
+		AtomicInteger count = new AtomicInteger(0);
+		
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				//exe.submit(() -> {
-					pic.setRGB(x, y, raytrace(x, y, s, data).getRGB());
-				//});
+				pool.submit(() -> {
+					try {
+						if (x < width && y < height) {
+							Color pixel = null;
+							synchronized(pic) {
+								pixel = raytrace(x, y, s, data);
+								System.out.println(String.format("Rendered pixel (%d,%d) with color %s", x, y, pixel.toString()));
+								pic.setRGB(x, y, pixel.getRGB());
+								count.getAndIncrement();
+							}}
+//						} else {
+//							System.out.println(String.format("Attempted to raytrace (%d, %d)", x, y));
+//						}
+					} catch (ArrayIndexOutOfBoundsException e) {
+						System.err.println("ArrayIndexOutOfBoundsException thrown while writing pixel data to pixel (" + x + "," + y + "). Width: " + width + " Height: " + height);
+						e.printStackTrace();
+					}
+	
+				});
 
 				// This line of code here prints out the rendering progress, but
 				// slows down the rendering process drastically (System calls
@@ -76,6 +107,12 @@ public class Camera implements Transformable {
 				}
 			}
 		}
+		try {
+			pool.shutdown();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		assertEquals(width * height, count.get());
 		rendering = false;
 		return pic;
 	}
@@ -107,7 +144,7 @@ public class Camera implements Transformable {
 		Vector3 c = new Vector3(0.0, 0.0, 0.0);
 		for (int i = 0; i < len; i++) {
 			if (hits[i].isHit) {
-				c.add(phongShading(s, primaries[i], hits[i]));
+				c.add(render.render(this, s, primaries[i], hits[i]));
 			}
 		}
 		c.scl(1.0 / (double) len);// Average the colors
@@ -184,43 +221,6 @@ public class Camera implements Transformable {
 		return new RaycastHit(primitive, hitPoint, normal, dist, isHit);
 	}
 
-	private Vector3 phongShading(Scene s, Ray ray, RaycastHit hit) {
-		Vector3 c = new Vector3(0.0, 0.0, 0.0);
-		IModel h = hit.itemHit;
-		Color itemColor = h.getMaterial().getColor();
-		Material m = h.getMaterial();
-		Vector3 n = hit.normal.clone();
-		c.x = (double) itemColor.getRed() * s.ambient.getInitialIntensity();
-		c.y = (double) itemColor.getGreen() * s.ambient.getInitialIntensity();
-		c.z = (double) itemColor.getBlue() * s.ambient.getInitialIntensity();
-		Vector3 lookVec = ray.getOrigin().getSubtract(hit.hitPoint).getNormalized();
-		for (Light l : s.lights) {
-
-			Ray r = Ray.createRayFromPoints(hit.hitPoint, l.getPos());
-			RaycastHit hitToLight = raycast(r, s);
-
-			//check if hitpoint is in a shadow
-			if (hitToLight.isHit && hitToLight.dist > .00001) 
-				 continue;
-			Vector3 refVec = n.getScale(2 * r.getDir().dot(n)).getSubtract(r.getDir());
-			// diffuse
-			double d = max(r.getDir().dot(n), 0);
-
-			c.x += m.Kd() * (double) itemColor.getRed() * d;
-			c.y += m.Kd() * (double) itemColor.getGreen() * d;
-			c.z += m.Kd() * (double) itemColor.getBlue() * d;
-			// specular
-			d = Math.pow(max(0, refVec.dot(lookVec)), hit.itemHit.getMaterial().getAlpha());
-			c.x += m.Ks() * (double) l.getColor().getRed() * d;
-			c.y += m.Ks() * (double) l.getColor().getGreen() * d;
-			c.z += m.Ks() * (double) l.getColor().getBlue() * d;
-		}
-		c.x = clamp(c.x, 0.0, 255.0);
-		c.y = clamp(c.y, 0.0, 255.0);
-		c.z = clamp(c.z, 0.0, 255.0);
-		return c;
-	}
-
 	public void translate(Vector3 v) {
 		this.pos.add(v);
 
@@ -249,28 +249,15 @@ public class Camera implements Transformable {
 			return -1.0;
 		}
 	}
-
-	private double clamp(double num, double min, double max) {
-		if (num < min)
-			num = min;
-		else if (num > max)
-			num = max;
-		return num;
-	}
-
-	private int clamp(int num, int min, int max) {
-		if (num < min)
-			num = min;
-		else if (num > max)
-			num = max;
-		return num;
-	}
-
-	private double max(double a, double b) {
-		return a > b ? a : b;
-	}
-
-	private int round(double d) {
+	
+	/**
+	 * Rounds a floating point number to the nearest integer.
+	 * 
+	 * @param d the number to round
+	 * @return the rounded number
+	 */
+	protected int round(double d) {
 		return (int) (d + .5);
 	}
+
 }
