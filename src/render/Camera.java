@@ -46,6 +46,7 @@ public class Camera extends AbstractEventEmitter implements Transformable {
 	private boolean rendering;
 	private ThreadPool pool;
 	private RenderStrategy render;
+	private int renderedPixelCount;
 
 	public Camera(Vector3 pos, Transform cameraToWorld, double focalLength) {
 		this.pos = pos;
@@ -54,15 +55,14 @@ public class Camera extends AbstractEventEmitter implements Transformable {
 		this.rendering = false;
 		this.pool = new ThreadPool();
 		this.render = RenderStrategy.getStrategy();
+		this.renderedPixelCount = 0;
 	}
 
 	/**
 	 * Takes a picture of a {@link Scene}.
 	 * 
-	 * @param s
-	 *            The {@link Scene} to take a picture of
-	 * @param data
-	 *            The resolution information to use
+	 * @param s    The {@link Scene} to take a picture of
+	 * @param data The resolution information to use
 	 * @return A picture of the {@link Scene}
 	 */
 	public BufferedImage takePicture(Scene s, ImageData data) {
@@ -70,65 +70,74 @@ public class Camera extends AbstractEventEmitter implements Transformable {
 		rendering = true;
 		width = data.getWidth();
 		height = data.getHeight();
-		AtomicInteger count = new AtomicInteger(0);
-		
+		this.renderedPixelCount = 0;
+		int submittedCount = 0; // number of threads submitted to the thread pool
+
 		for (y = 0; y < height; y++) {
 			for (x = 0; x < width; x++) {
-				pool.submit(() -> {
-					try {
-						if (x < width && y < height) {
-							Color pixel = null;
-							synchronized(pic) {
-								pixel = raytrace(x, y, s, data);
-								System.out.println(String.format("Rendered pixel (%d,%d) with color %s", x, y, pixel.toString()));
-								pic.setRGB(x, y, pixel.getRGB());
-								count.getAndIncrement();
-							}}
-//						} else {
-//							System.out.println(String.format("Attempted to raytrace (%d, %d)", x, y));
-//						}
-					} catch (ArrayIndexOutOfBoundsException e) {
-						System.err.println("ArrayIndexOutOfBoundsException thrown while writing pixel data to pixel (" + x + "," + y + "). Width: " + width + " Height: " + height);
-						e.printStackTrace();
-					}
-	
-				});
 
+				this.submitPixelRenderThread(pic, s, data, x, y);
+				submittedCount++;
 				// This line of code here prints out the rendering progress, but
 				// slows down the rendering process drastically (System calls
 				// are expensive).
 				// System.out.println(100.0*(double)(y*data.getWidth()+x)/(double)(data.getWidth()*data.getHeight())+"%");
-				if (Main.DEBUG) {
-					double percent = 100.0 * (double) (y * width + x) / (double) (width * height);
-					if (percent % 10 == 0 || percent % 10 == 5) {
-						System.out.println(percent + "%");
-					}
-
-				}
+//				if (Main.DEBUG) {
+//					double percent = 100.0 * (double) (y * width + x) / (double) (width * height);
+//					if (percent % 10 == 0 || percent % 10 == 5) {
+//						System.out.println(percent + "%");
+//					}
+//
+//				}
 			}
 		}
 		try {
 			pool.shutdown();
+			System.out.println("Is pool running? " + pool.isRunning());
+			System.out.println("Threads in pool after shutdown(): " + pool.getTaskQueue().size());
+			System.out.println("Submitted threads: " + submittedCount);
+			int expectedCalculatedPixelCount = width * height;
+			assertEquals(expectedCalculatedPixelCount, getRenderedPixelCount());
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		} catch (AssertionError e) {
+			System.out.println(e.getMessage());
 		}
-		assertEquals(width * height, count.get());
+
 		rendering = false;
 		return pic;
 	}
+	
+	private synchronized void submitPixelRenderThread(BufferedImage pic, Scene s, ImageData data, int x, int y) {
+		pool.submit(() -> {
+			
+			try {
+				synchronized (pic) {
+					Color pixel = raytrace(x, y, s, data);
+					pic.setRGB(x, y, pixel.getRGB());
+					this.incrementRenderedPixelCount();
+				}
+//				} else {
+//					System.out.println(String.format("Attempted to raytrace (%d, %d)", x, y));
+//				}
+			} catch (ArrayIndexOutOfBoundsException e) {
+				System.err.println("ArrayIndexOutOfBoundsException thrown while writing pixel data to pixel ("
+						+ x + "," + y + "). Width: " + width + " Height: " + height);
+				e.printStackTrace();
+			} 
+			
+
+		});
+	}
 
 	/**
-	 * Gets the color of a specific pixel from a {@link Scene}. Using this
-	 * method across an entire image results in a fully rendered image.
+	 * Gets the color of a specific pixel from a {@link Scene}. Using this method
+	 * across an entire image results in a fully rendered image.
 	 * 
-	 * @param x
-	 *            The pixel's x location on the image
-	 * @param y
-	 *            The pixel's y location on the image
-	 * @param s
-	 *            The {@link Scene} to sample
-	 * @param data
-	 *            Information about the image
+	 * @param x    The pixel's x location on the image
+	 * @param y    The pixel's y location on the image
+	 * @param s    The {@link Scene} to sample
+	 * @param data Information about the image
 	 * @return
 	 */
 	public Color raytrace(int x, int y, Scene s, ImageData data) {
@@ -156,12 +165,9 @@ public class Camera extends AbstractEventEmitter implements Transformable {
 	 * Constructs a perspective {@link Ray} using the x and y coordinates of an
 	 * image. A page on why/how this works will be added to the wiki.
 	 * 
-	 * @param x
-	 *            The x coordinate the {@link Ray} will pass through
-	 * @param y
-	 *            The y coordinate the {@link Ray} will pass through
-	 * @param i
-	 *            Data on the image
+	 * @param x The x coordinate the {@link Ray} will pass through
+	 * @param y The y coordinate the {@link Ray} will pass through
+	 * @param i Data on the image
 	 * @return The {@link Ray} that is constructed
 	 */
 	private Ray[] getPerspectiveRay(int x, int y, ImageData i) {
@@ -221,6 +227,14 @@ public class Camera extends AbstractEventEmitter implements Transformable {
 		return new RaycastHit(primitive, hitPoint, normal, dist, isHit);
 	}
 
+	private synchronized int incrementRenderedPixelCount() {
+		return this.renderedPixelCount++;
+	}
+
+	private synchronized int getRenderedPixelCount() {
+		return this.renderedPixelCount;
+	}
+
 	public void translate(Vector3 v) {
 		this.pos.add(v);
 
@@ -249,7 +263,7 @@ public class Camera extends AbstractEventEmitter implements Transformable {
 			return -1.0;
 		}
 	}
-	
+
 	/**
 	 * Rounds a floating point number to the nearest integer.
 	 * 

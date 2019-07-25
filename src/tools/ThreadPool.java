@@ -261,13 +261,17 @@ public class ThreadPool extends AbstractEventEmitter implements EventListener {
 		// System.out.println("Thread " + ended + " ended. " + (this.running.size() + this.taskQueue.size()) + " tasks left.");
 		if (this.running.isEmpty() && this.taskQueue.isEmpty()) {
 			this.state = PoolState.COMPLETE;
-			notify();
+			notifyAll();
 		}
 			
 		
 		if (this.isRunning())
 			this.populateRunningList();
 
+	}
+	
+	public Queue<? extends Thread> getTaskQueue() {
+		return this.taskQueue;
 	}
 
 	/**

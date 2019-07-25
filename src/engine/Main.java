@@ -3,7 +3,11 @@ package engine;
 import java.io.BufferedOutputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintStream;
+
+import tools.TeeOutputStream;
 
 import debug.DebugEnvironment;
 /**
@@ -20,8 +24,11 @@ public class Main {
 	public static String LOG_NAME = "log.txt";
 	
 	public static void main(String[] args) throws FileNotFoundException {
-		if (PIPE_STDOUT_TO_FILE)
-			System.setOut(new PrintStream(new BufferedOutputStream(new FileOutputStream(LOG_NAME)), true));
+		if (PIPE_STDOUT_TO_FILE) {
+			TeeOutputStream stdoutStream = new TeeOutputStream(System.out, new BufferedOutputStream(new FileOutputStream(LOG_NAME)));
+			System.setOut(new PrintStream(stdoutStream, true));
+		}
+			
 		if(RUN_DEBUG_ENVIRONMENT)
 			new DebugEnvironment();
 		else if(VISUAL)
@@ -30,5 +37,7 @@ public class Main {
 			new NonVisualEngine();
 
 	}
+	
+
 
 }

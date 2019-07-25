@@ -47,7 +47,7 @@ public class NonVisualEngine {
 	Scene s;
 	ImageData data;
 	int x, y;
-	private boolean _16_9 = false;
+	private boolean _16_9 = true;
 	DefaultMaterial red, blue, pink, green, orange, white, yellow, cyan, grey, black;
 
 	private void initialize() {
@@ -58,9 +58,9 @@ public class NonVisualEngine {
 		loadMaterials();
 		s.ambient = new AmbientLight(Color.white, .1);
 		// loadSnowman();
-		loadSphereModels();
+		// loadSphereModels();
 		// loadSphereModels2();
-		// loadBMW();
+		loadBMW();
 		// loadModel();
 		// loadMonkey();
 		data = new ImageData(width, height, BufferedImage.TYPE_INT_RGB, false);
